@@ -35,7 +35,6 @@
     "wiki": "http://o2system.in/standalone/o2parser/wiki.html",
     "github-wiki": "http://github.com/circlecreative/o2parser/wiki"
   },
-  "minimum-stability": "RC",
   "require": {
     "php": ">=5.4.0",
     "o2system/o2glob"  : "*"
