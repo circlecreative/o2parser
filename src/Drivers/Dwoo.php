@@ -36,12 +36,11 @@
  */
 // ------------------------------------------------------------------------
 
-namespace O2System\O2Parser\Drivers;
-defined( 'BASEPATH' ) OR exit( 'No direct script access allowed' );
+namespace O2System\Parser\Drivers;
 
 // ------------------------------------------------------------------------
 
-use O2System\O2Parser\Interfaces\Driver;
+use O2System\Parser\Interfaces\Driver;
 
 /**
  * Dwoo Engine Adapter

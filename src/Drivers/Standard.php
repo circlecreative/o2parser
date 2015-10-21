@@ -26,12 +26,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @package     O2System
- * @author      Circle Creative Dev Team
- * @copyright   Copyright (c) 2005 - 2015, PT. Lingkar Kreasi (Circle Creative).
- * @license     http://circle-creative.com/products/o2parser/license.html
- * @license     http://opensource.org/licenses/MIT  MIT License
- * @link        http://circle-creative.com/products/o2parser.html
+ * @package		O2System
+ * @author		Circle Creative Dev Team
+ * @copyright	Copyright (c) 2005 - 2015, PT. Lingkar Kreasi (Circle Creative).
+ * @license		http://circle-creative.com/products/o2parser/license.html
+ * @license	    http://opensource.org/licenses/MIT	MIT License
+ * @link		http://circle-creative.com/products/o2parser.html
  * @filesource
  */
 // ------------------------------------------------------------------------
@@ -43,11 +43,9 @@ namespace O2System\Parser\Drivers;
 use O2System\Parser\Interfaces\Driver;
 
 /**
- * Mustache Engine Adapter
+ * Standard Parser Engine
  *
- * Parser Adapter for Mustache Engine
- *
- * @package       O2TED
+ * @package       Template
  * @subpackage    drivers/Engine
  * @category      Adapter Class
  * @author        Steeven Andrian Salim
@@ -56,7 +54,7 @@ use O2System\Parser\Interfaces\Driver;
  * @link          http://circle-creative.com
  *                http://o2system.center
  */
-class Mustache extends Driver
+class Standard extends Driver
 {
     /**
      * List of possible view file extensions
@@ -68,14 +66,6 @@ class Mustache extends Driver
     public $extensions = array( '.php', '.html', '.tpl' );
 
     /**
-     * Static Engine Object
-     *
-     * @access  private
-     * @var  Engine Object
-     */
-    private static $_engine;
-
-    /**
      * Setup Engine
      *
      * @param   $settings   Template Config
@@ -85,11 +75,6 @@ class Mustache extends Driver
      */
     public function set( $settings = array() )
     {
-        if( ! isset( static::$_engine ) )
-        {
-            static::$_engine = new \Mustache_Engine();
-        }
-
         return $this;
     }
 
@@ -104,7 +89,53 @@ class Mustache extends Driver
      */
     public function parse_string( $string, $vars = array() )
     {
-        return static::$_engine->get( $string, $vars );
+        $codes = array(
+            '{if(%%)}'      => '<?php if (\1): ?>',
+            '{elseif(%%)}'  => '<?php elseif(\1): ?>',
+            '{for(%%)}'     => '<?php for(\1): ?>',
+            '{foreach(%%)}' => '<?php foreach(\1): ?>',
+            '{while(%%)}'   => '<?php while(\1): ?>',
+            '{/if}'        => '<?php endif; ?>',
+            '{/for}'       => '<?php endfor; ?>',
+            '{/foreach}'   => '<?php endforeach; ?>',
+            '{/while}'     => '<?php endwhile; ?>',
+            '{else}'       => '<?php else: ?>',
+            '{continue}'   => '<?php continue; ?>',
+            '{break}'      => '<?php break; ?>',
+            '{%%(%%)}'     => '<?php echo \1(\2); ?>',
+            '{$%%->%%}'    => '<?php echo(isset($\1->\2) ? $\1->\2 : ""); ?>',
+            '{$%%.%%}'     => '<?php echo(isset($\1[\'\2\']) ? $\1[\'\2\'] : ""); ?>',
+            '{$%% = %%}'   => '<?php $\1 = \2; ?>',
+            '{$%%++}'      => '<?php $\1++; ?>',
+            '{$%%--}'      => '<?php $\1--; ?>',
+            '{$%%}'        => '<?php echo(isset($\1) ? $\1 : ""); ?>',
+            '{comment}'    => '<?php /*',
+            '{/comment}'   => '*/ ?>',
+            '{/*}'         => '<?php /*',
+            '{*/}'         => '*/ ?>',
+        );
+
+        foreach( $codes as $tpl_code => $php_code )
+        {
+            $patterns[ ] = '#' . str_replace( '%%', '(.+)', preg_quote( $tpl_code, '#' ) ) . '#U';
+            $replace[ ] = $php_code;
+        }
+
+        /*replace our pseudo language in template with php code*/
+
+        $string = preg_replace( $patterns, $replace, $string );
+
+        if( ! empty( $vars ) )
+        {
+            extract( $vars );
+        }
+
+        ob_start();
+        @eval( '?>' . $string );
+        $output = ob_get_contents();
+        @ob_end_clean();
+
+        return $output;
     }
 
     /**
@@ -116,6 +147,6 @@ class Mustache extends Driver
      */
     public function register_plugin()
     {
-
+        return $this;
     }
 }

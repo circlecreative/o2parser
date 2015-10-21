@@ -37,14 +37,15 @@
   },
   "require": {
     "php": ">=5.4.0",
-    "o2system/o2glob"  : "*"
+    "o2system/o2glob"  : "*",
+    "erusev/parsedown": "*"
   },
   "autoload": {
     "psr-4": {
-      "O2System\\O2Parser\\": "src"
+      "O2System\\Parser\\": "src"
     },
     "files": [
-      "src/O2Parser.php"
+      "src/Parser.php"
     ]
   }
 }

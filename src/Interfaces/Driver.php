@@ -36,11 +36,9 @@
  * @filesource
  */
 // ------------------------------------------------------------------------
-namespace O2System\O2Parser\Interfaces;
+namespace O2System\Parser\Interfaces;
 
-use O2System\O2Glob\Drivers;
-
-abstract class Driver extends Drivers
+abstract class Driver
 {
     /**
      * List of possible view file extensions
@@ -49,7 +47,7 @@ abstract class Driver extends Drivers
      *
      * @type array
      */
-    protected $_extensions;
+    public $extensions;
 
     /**
      * Setup Engine
