@@ -40,6 +40,7 @@ namespace O2System\Parser\Drivers;
 
 // ------------------------------------------------------------------------
 
+use O2System\Parser\Exception;
 use O2System\Parser\Interfaces\Driver;
 
 /**
@@ -58,79 +59,87 @@ use O2System\Parser\Interfaces\Driver;
  */
 class Smarty extends Driver
 {
-    /**
-     * List of possible view file extensions
-     *
-     * @access  public
-     *
-     * @type array
-     */
-    public $extensions = array( '.php', '.html', '.tpl' );
+	/**
+	 * List of possible view file extensions
+	 *
+	 * @access  public
+	 *
+	 * @type array
+	 */
+	public $extensions = array( '.php', '.html', '.tpl' );
 
-    /**
-     * Static Engine Object
-     *
-     * @access  private
-     * @var  Engine Object
-     */
-    private static $_engine;
+	/**
+	 * Static Engine Object
+	 *
+	 * @access  private
+	 * @var  Engine Object
+	 */
+	private static $_engine;
 
-    /**
-     * Setup Engine
-     *
-     * @param   $settings   Template Config
-     *
-     * @access  public
-     * @return  Parser Engine Adapter Object
-     */
-    public function set( $settings = array() )
-    {
-        if( ! isset( static::$_engine ) )
-        {
-            static::$_engine = new \Smarty();
-        }
+	/**
+	 * Setup Engine
+	 *
+	 * @param   $settings   Template Config
+	 *
+	 * @access  public
+	 * @return  Parser Engine Adapter Object
+	 */
+	public function set( $settings = array() )
+	{
+		if ( ! class_exists( 'Smarty' ) )
+		{
+			throw new Exception( 'The Smarty Template Engine must be loaded to use Parser with Smarty Driver.' );
+		}
 
-        static::$_engine->setCompileDir( $settings[ 'cache' ][ 'compiler' ] );
-        static::$_engine->setCacheDir( $settings[ 'cache' ][ 'path' ] );
-        static::$_engine->caching = $settings[ 'cache' ][ 'enable' ];
+		if ( ! isset( static::$_engine ) )
+		{
+			static::$_engine = new \Smarty();
+		}
 
-        return $this;
-    }
+		$cache_path = $settings[ 'cache' ] . DIRECTORY_SEPARATOR . 'compiler' . DIRECTORY_SEPARATOR;
+		$compiler_path = $settings[ 'cache' ] . DIRECTORY_SEPARATOR . 'compiler' . DIRECTORY_SEPARATOR;
 
-    /**
-     * Parse String
-     *
-     * @param   string   String Source Code
-     * @param   array    Array of variables data to be parsed
-     *
-     * @access  public
-     * @return  string  Parse Output Result
-     */
-    public function parse_string( $string, $vars = array() )
-    {
-        foreach( $vars as $_assign_key => $_assign_value )
-        {
-            static::$_engine->assign( $_assign_key, $_assign_value );
-        }
+		static::$_engine->setCompileDir( $cache_path );
+		static::$_engine->setCacheDir( $compiler_path );
+		static::$_engine->caching = FALSE;
 
-        return static::$_engine->fetch( 'string:' . $string );
-    }
+		return $this;
+	}
 
-    /**
-     * Registers plugin to be used in templates
-     *
-     * @param string   $type       plugin type
-     * @param string   $tag        name of template tag
-     * @param callback $callback   PHP callback to register
-     * @param boolean  $cacheable  if true (default) this fuction is cachable
-     * @param array    $cache_attr caching attributes if any
-     *
-     * @throws SmartyException when the plugin tag is invalid
-     */
-    public function register_plugin()
-    {
-        @list( $type, $tag, $callback, $cacheable, $cache_attr ) = func_get_args();
+	/**
+	 * Parse String
+	 *
+	 * @param   string   String Source Code
+	 * @param   array    Array of variables data to be parsed
+	 *
+	 * @access  public
+	 * @return  string  Parse Output Result
+	 */
+	public function parse_string( $string, $vars = array() )
+	{
+		foreach ( $vars as $_assign_key => $_assign_value )
+		{
+			static::$_engine->assign( $_assign_key, $_assign_value );
+		}
 
-        return static::$_engine->registerPlugin( $type, $tag, $callback, $cacheable, $cache_attr );
-    }
+		return static::$_engine->fetch( 'string:' . $string );
+	}
+
+	/**
+	 * Registers plugin to be used in templates
+	 *
+	 * @param string   $type       plugin type
+	 * @param string   $tag        name of template tag
+	 * @param callback $callback   PHP callback to register
+	 * @param boolean  $cacheable  if true (default) this fuction is cachable
+	 * @param array    $cache_attr caching attributes if any
+	 *
+	 * @throws SmartyException when the plugin tag is invalid
+	 */
+	public function register_plugin()
+	{
+		@list( $type, $tag, $callback, $cacheable, $cache_attr ) = func_get_args();
+
+		return static::$_engine->registerPlugin( $type, $tag, $callback, $cacheable, $cache_attr );
+	}
 }

@@ -37,282 +37,322 @@
  */
 // ------------------------------------------------------------------------
 
-namespace O2System;
-
-use O2System\Glob\Interfaces\Libraries;
-use O2System\Glob\Exception;
-
-/**
- * Parser Library
- *
- * @package          Template
- * @subpackage       Library
- * @category         Driver
- * @version          1.0 Build 11.09.2012
- * @author           Steeven Andrian Salim
- * @copyright        Copyright (c) 2005 - 2014 PT. Lingkar Kreasi (Circle Creative)
- * @license          http://www.circle-creative.com/products/o2system/license.html
- * @link             http://www.circle-creative.com
- */
-// ------------------------------------------------------------------------
-class Parser extends Libraries
+namespace O2System
 {
-    /**
-     * Valid Drivers
-     *
-     * @access protected
-     */
-    protected $_valid_drivers = array(
-        'standard',
-        'dwoo',
-        'mustache',
-        'smarty',
-        'twig',
-        'shortcode'
-    );
+	use O2System\Glob\Interfaces\Libraries;
+	use O2System\Glob\Exception;
 
-    /**
-     * Parser Configuration
-     *
-     * @access protected
-     */
-    protected $_config = array(
-        'driver'             => 'standard',
-        'php'                => TRUE,
-        'markdown'           => FALSE,
-        'shortcode'          => FALSE,
-        'rewrite_short_tags' => FALSE
-    );
+	/**
+	 * Parser Library
+	 *
+	 * @package          Template
+	 * @subpackage       Library
+	 * @category         Driver
+	 * @version          1.0 Build 11.09.2012
+	 * @author           Steeven Andrian Salim
+	 * @copyright        Copyright (c) 2005 - 2014 PT. Lingkar Kreasi (Circle Creative)
+	 * @license          http://www.circle-creative.com/products/o2system/license.html
+	 * @link             http://www.circle-creative.com
+	 */
+	// ------------------------------------------------------------------------
+	class Parser extends Libraries
+	{
+		/**
+		 * Valid Drivers
+		 *
+		 * @access protected
+		 */
+		protected $_valid_drivers = array(
+			'standard',
+			'dwoo',
+			'mustache',
+			'smarty',
+			'twig',
+			'shortcode',
+		);
+
+		/**
+		 * Parser Configuration
+		 *
+		 * @access protected
+		 */
+		protected $_config = array(
+			'driver'             => 'standard',
+			'php'                => TRUE,
+			'markdown'           => FALSE,
+			'shortcode'          => FALSE,
+			'rewrite_short_tags' => FALSE,
+		);
 
 
-    /**
-     * Active parser engine driver
-     *
-     * @access  protected
-     *
-     * @type string
-     */
-    protected $_driver;
+		/**
+		 * Active parser engine driver
+		 *
+		 * @access  protected
+		 *
+		 * @type string
+		 */
+		protected $_driver;
 
-    /**
-     * List of possible view file extensions
-     *
-     * @access  protected
-     *
-     * @type array
-     */
-    public $extensions = array( '.php', '.html', '.tpl' );
+		/**
+		 * List of possible view file extensions
+		 *
+		 * @access  protected
+		 *
+		 * @type array
+		 */
+		public $extensions = array( '.php', '.phtml', '.html', '.tpl' );
 
-    // ------------------------------------------------------------------------
+		// ------------------------------------------------------------------------
 
-    /**
-     * Glob Libraries Class Constructor
-     *
-     * @access  public
-     *
-     * @uses    O2System\Core\Loader
-     * @uses    O2System\Core\Gears\Logger
-     *
-     */
-    public function __construct( $config = array() )
-    {
-        // Define Parser Glob Exception
-        $exception = new Exception();
-        $exception->register_path( __DIR__ . '/Views/' );
-        $exception->register_handler();
+		/**
+		 * Glob Libraries Class Constructor
+		 *
+		 * @access  public
+		 *
+		 * @uses    O2System\Core\Loader
+		 * @uses    O2System\Core\Gears\Logger
+		 *
+		 */
+		public function __construct( $config = array() )
+		{
+			if ( ! class_exists( 'O2System', FALSE ) )
+			{
+				$exception = new Exception();
+				$exception->register_path( __DIR__ . '/Views/' );
+				$exception->register_handler();
+			}
 
-        if( ! empty( $config ) )
-        {
-            $this->_config = array_merge( $this->_config, $config );
-            $this->set_driver( $this->_config[ 'driver' ] );
-        }
-    }
+			if ( ! empty( $config ) )
+			{
+				$this->_config = array_merge( $this->_config, $config );
+				$this->set_driver( $this->_config[ 'driver' ] );
+			}
+		}
 
-    /**
-     * Set Render Engine Driver
-     *
-     * @access  public
-     *
-     * @param   string $driver String of driver name
-     *
-     * @thrown  throw new Exception()
-     *
-     * @return \O2System\Libraries\Template Instance of O2System\Core\Template class
-     */
-    public function set_driver( $driver )
-    {
-        $driver = strtolower( $driver );
+		/**
+		 * Set Render Engine Driver
+		 *
+		 * @access  public
+		 *
+		 * @param   string $driver String of driver name
+		 *
+		 * @thrown  throw new Exception()
+		 *
+		 * @return \O2System\Libraries\Template Instance of O2System\Core\Template class
+		 */
+		public function set_driver( $driver )
+		{
+			$driver = strtolower( $driver );
 
-        if( ! in_array( $driver, $this->_valid_drivers ) )
-        {
-            throw new \BadMethodCallException( 'Unsupported Parser Driver: ' . $driver );
-        }
+			if ( ! in_array( $driver, $this->_valid_drivers ) )
+			{
+				throw new \BadMethodCallException( 'Unsupported Parser Driver: ' . $driver );
+			}
 
-        if( isset( $this->{$driver}->extensions ) )
-        {
-            $this->extensions = array_merge( $this->extensions, $this->{$driver}->extensions );
-            $this->extensions = array_unique( $this->extensions );
-        }
+			if ( isset( $this->{$driver}->extensions ) )
+			{
+				$this->extensions = array_merge( $this->extensions, $this->{$driver}->extensions );
+				$this->extensions = array_unique( $this->extensions );
+			}
 
-        $class_name = get_called_class() . '\\Drivers\\' . ucfirst( $driver );
+			$class_name = get_called_class() . '\\Drivers\\' . ucfirst( $driver );
 
-        $this->_driver = new $class_name();
-    }
+			$this->_driver = new $class_name();
 
-    /**
-     * Parse HTML Source Code
-     *
-     * Parse HTML source code using active parser engine
-     *
-     * @access  public
-     *
-     * @param string $source_code HTML source code
-     * @param array  $vars        Array of parse data variables
-     *
-     * @return string
-     */
-    public function parse_source_code( $source_code = '', $vars = array() )
-    {
-        // Parse PHP
-        if( $this->_config[ 'php' ] === TRUE )
-        {
-            $source_code = $this->parse_php( $source_code, $vars );
-        }
+			$this->_driver->set( [ 'cache' => $this->_config[ 'cache' ] . 'parser' . DIRECTORY_SEPARATOR ] );
+		}
 
-        // Parse Markdown
-        if( $this->_config[ 'markdown' ] === TRUE )
-        {
-            $source_code = $this->parse_markdown( $source_code );
-        }
+		public function parse_file( $file, $vars = array() )
+		{
+			if ( file_exists( $file ) )
+			{
+				return $this->parse_source_code( file_get_contents( $file ), $vars );
+			}
 
-        // Parse Shortcode
-        if( $this->_config[ 'shortcode' ] === TRUE )
-        {
-            $source_code = $this->parse_shortcode( $source_code );
-        }
+			return FALSE;
+		}
 
-        // Parse String
-        $source_code = $this->parse_string( $source_code, $vars );
+		/**
+		 * Parse HTML Source Code
+		 *
+		 * Parse HTML source code using active parser engine
+		 *
+		 * @access  public
+		 *
+		 * @param string $source_code HTML source code
+		 * @param array  $vars        Array of parse data variables
+		 *
+		 * @return string
+		 */
+		public function parse_source_code( $source_code = '', $vars = array() )
+		{
+			// Parse PHP
+			if ( $this->_config[ 'php' ] === TRUE )
+			{
+				$source_code = $this->parse_php( $source_code, $vars );
+			}
 
-        return $source_code;
-    }
+			// Parse Markdown
+			if ( $this->_config[ 'markdown' ] === TRUE )
+			{
+				$source_code = $this->parse_markdown( $source_code );
+			}
 
-    /**
-     * Parse String
-     *
-     * Parse String Syntax Code of Render Engine inside HTML source code
-     *
-     * @access  public
-     *
-     * @param string $source_code HTML Source Code
-     * @param array  $vars        Array of parsing data variables
-     *
-     * @return string
-     */
-    public function parse_string( $source_code, $vars = array() )
-    {
-        return $this->_driver->parse_string( $source_code, $vars );
-    }
+			// Parse Shortcode
+			if ( $this->_config[ 'shortcode' ] === TRUE )
+			{
+				$source_code = $this->parse_shortcode( $source_code );
+			}
 
-    /**
-     * Parse Markdown
-     *
-     * Parse Markdown Code inside HTML source code
-     *
-     * @access  public
-     *
-     * @param $source_code  HTML source code
-     *
-     * @return string
-     */
-    public function parse_markdown( $source_code )
-    {
-        if( class_exists( 'Parsedown', FALSE ) )
-        {
-            $source_code = htmlspecialchars_decode( $source_code );
+			// Parse String
+			$source_code = $this->parse_string( $source_code, $vars );
 
-            $markdown = new \Parsedown();
+			return $source_code;
+		}
 
-            return $markdown->text( $source_code );
-        }
+		/**
+		 * Parse String
+		 *
+		 * Parse String Syntax Code of Render Engine inside HTML source code
+		 *
+		 * @access  public
+		 *
+		 * @param string $source_code HTML Source Code
+		 * @param array  $vars        Array of parsing data variables
+		 *
+		 * @return string
+		 */
+		public function parse_string( $source_code, $vars = array() )
+		{
+			return $this->_driver->parse_string( $source_code, $vars );
+		}
 
-        return $source_code;
-    }
+		/**
+		 * Parse Markdown
+		 *
+		 * Parse Markdown Code inside HTML source code
+		 *
+		 * @access  public
+		 *
+		 * @param $source_code  HTML source code
+		 *
+		 * @return string
+		 */
+		public function parse_markdown( $source_code )
+		{
+			if ( ! class_exists( 'Parsedown' ) )
+			{
+				throw new \O2System\Parser\Exception('The Erusev Parsedown must be loaded to use Parser with Markdown.');
+			}
 
-    /**
-     * Parse Shortcode
-     *
-     * Parse Wordpress a Like Shortcode Code inside HTML source code
-     *
-     * @access  public
-     *
-     * @param $source_code  HTML source code
-     *
-     * @return string
-     */
-    public function parse_shortcode( $source_code )
-    {
-        if( $shortcodes = $this->shortcode->fetch( $source_code ) )
-        {
-            $source_code = $this->shortcode->parse( $source_code );
-        }
+			$source_code = htmlspecialchars_decode( $source_code );
 
-        // Fixed Output
-        $source_code = str_replace( array( '_shortcode', '[?php', '?]' ), array( 'shortcode', '&lt;?php', '?&gt;' ),
-                                    $source_code );
+			$markdown = new \Parsedown();
 
-        return $source_code;
-    }
+			return $markdown->text( $source_code );
+		}
 
-    /**
-     * Parse PHP
-     *
-     * Parse PHP Code inside HTML source code
-     *
-     * @access  public
-     *
-     * @param string $source_code HTML source code
-     * @param array  $vars        Array of parse data variables
-     *
-     * @return string
-     */
-    public function parse_php( $source_code, $vars = array() )
-    {
-        $source_code = htmlspecialchars_decode( $source_code );
+		/**
+		 * Parse Shortcode
+		 *
+		 * Parse Wordpress a Like Shortcode Code inside HTML source code
+		 *
+		 * @access  public
+		 *
+		 * @param $source_code  HTML source code
+		 *
+		 * @return string
+		 */
+		public function parse_shortcode( $source_code )
+		{
+			if ( $shortcodes = $this->shortcode->fetch( $source_code ) )
+			{
+				$source_code = $this->shortcode->parse( $source_code );
+			}
 
-        extract( $vars );
+			// Fixed Output
+			$source_code = str_replace( array( '_shortcode', '[?php', '?]' ), array( 'shortcode', '&lt;?php', '?&gt;' ),
+			                            $source_code );
 
-        /*
-         * Buffer the output
-         *
-         * We buffer the output for two reasons:
-         * 1. Speed. You get a significant speed boost.
-         * 2. So that the final rendered template can be post-processed by
-         *  the output class. Why do we need post processing? For one thing,
-         *  in order to show the elapsed page load time. Unless we can
-         *  intercept the content right before it's sent to the browser and
-         *  then stop the timer it won't be accurate.
-         */
-        ob_start();
+			return $source_code;
+		}
 
-        // If the PHP installation does not support short tags we'll
-        // do a little string replacement, changing the short tags
-        // to standard PHP echo statements.
-        if( ! ini_get( 'short_open_tag' ) AND
-            $this->_config[ 'rewrite_short_tags' ] === TRUE AND
-            function_usable( 'eval' )
-        )
-        {
-            echo eval( '?>' . preg_replace( '/;*\s*\?>/', '; ?>', str_replace( '<?=', '<?php echo ', $source_code ) ) );
-        }
-        else
-        {
-            echo eval( '?>' . preg_replace( '/;*\s*\?>/', '; ?>', $source_code ) );
-        }
+		/**
+		 * Parse PHP
+		 *
+		 * Parse PHP Code inside HTML source code
+		 *
+		 * @access  public
+		 *
+		 * @param string $source_code HTML source code
+		 * @param array  $vars        Array of parse data variables
+		 *
+		 * @return string
+		 */
+		public function parse_php( $source_code, $vars = array() )
+		{
+			$source_code = htmlspecialchars_decode( $source_code );
+			$vars = is_object( $vars ) ? get_object_vars( $vars ) : $vars;
 
-        $output = ob_get_contents();
-        @ob_end_clean();
+			extract( $vars );
 
-        return $output;
-    }
+			/*
+			 * Buffer the output
+			 *
+			 * We buffer the output for two reasons:
+			 * 1. Speed. You get a significant speed boost.
+			 * 2. So that the final rendered template can be post-processed by
+			 *  the output class. Why do we need post processing? For one thing,
+			 *  in order to show the elapsed page load time. Unless we can
+			 *  intercept the content right before it's sent to the browser and
+			 *  then stop the timer it won't be accurate.
+			 */
+			ob_start();
+
+			// If the PHP installation does not support short tags we'll
+			// do a little string replacement, changing the short tags
+			// to standard PHP echo statements.
+			if ( ! ini_get( 'short_open_tag' ) AND
+				$this->_config[ 'rewrite_short_tags' ] === TRUE AND
+				function_usable( 'eval' )
+			)
+			{
+				echo eval( '?>' . preg_replace( '/;*\s*\?>/', '; ?>', str_replace( '<?=', '<?php echo ', $source_code ) ) );
+			}
+			else
+			{
+				echo eval( '?>' . preg_replace( '/;*\s*\?>/', '; ?>', $source_code ) );
+			}
+
+			$output = ob_get_contents();
+			@ob_end_clean();
+
+			return $output;
+		}
+	}
+}
+
+namespace O2System\Parser
+{
+	use O2System\Glob\Exception\Interfaces as ExceptionInterface;
+
+	/**
+	 * Class Exception
+	 *
+	 * @package     O2Parser
+	 *
+	 * @author      O2System Developer Team
+	 * @link        http://o2system.in/features/o2template
+	 */
+	class Exception extends ExceptionInterface
+	{
+		public function __construct( $message = NULL, $code = 0, $previous = NULL )
+		{
+			parent::__construct( $message, $code, $previous );
+
+			// Register Custom Exception View Path
+			$this->register_view_paths( __DIR__ . '/Views/' );
+		}
+	}
 }
