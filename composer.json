@@ -2,7 +2,6 @@
   "name": "o2system/o2parser",
   "description": "O2Parser is a driver based parser library. It allows you to render view templates using different drivers. Supports rendering using plenty of Template Rendering Engine.",
   "license": "MIT",
-  "version": "1.0.0-beta",
   "type": "php-libraries",
   "keywords": ["utilities","php","framework","driver","libraries"],
   "authors": [
@@ -36,7 +35,7 @@
   },
   "require": {
     "php": ">=5.4.0",
-    "o2system/o2glob"  : "dev-master",
+    "o2system/o2glob"  : "1.*",
     "erusev/parsedown": "*"
   },
   "autoload": {
