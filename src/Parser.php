@@ -230,6 +230,10 @@ namespace O2System
 
 				// use github markdown
 				$markdown = new \cebe\markdown\GithubMarkdown();
+				$markdown->html5 = TRUE;
+				$markdown->keepListStartNumber = TRUE;
+				$markdown->enableNewlines = TRUE;
+
 				return $markdown->parse( $source_code );
 			}
 			elseif( $flavour === 'github-paragraph' )
@@ -241,17 +245,25 @@ namespace O2System
 
 				// parse only inline elements (useful for one-line descriptions)
 				$markdown = new \cebe\markdown\GithubMarkdown();
+				$markdown->html5 = TRUE;
+				$markdown->keepListStartNumber = TRUE;
+				$markdown->enableNewlines = TRUE;
+
 				return $markdown->parseParagraph( $source_code );
 			}
 			elseif( $flavour === 'extra' )
 			{
 				if ( ! class_exists( 'cebe\markdown\MarkdownExtra' ) )
 				{
-					throw new Exception( 'The Cebe Markdown GithubMarkdown Parser must be loaded to use Parser with Extra Flavour.' );
+					throw new Exception( 'The Cebe Markdown Extra Parser must be loaded to use Parser with Extra Flavour.' );
 				}
 
 				// use markdown extra
 				$markdown = new \cebe\markdown\MarkdownExtra();
+				$markdown->html5 = TRUE;
+				$markdown->keepListStartNumber = TRUE;
+				$markdown->enableNewlines = TRUE;
+
 				return $markdown->parse( $source_code );
 			}
 
@@ -262,6 +274,10 @@ namespace O2System
 
 			// traditional markdown and parse full text
 			$markdown = new \cebe\markdown\Markdown();
+			$markdown->html5 = TRUE;
+			$markdown->keepListStartNumber = TRUE;
+			$markdown->enableNewlines = TRUE;
+
 			return $markdown->parse( $source_code );
 		}
 
