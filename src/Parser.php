@@ -219,16 +219,35 @@ namespace O2System
 		 *
 		 * @return string
 		 */
-		public function parse_markdown( $source_code )
+		public function parse_markdown( $source_code, $flavour = 'default' )
 		{
 			if ( ! class_exists( 'Parsedown' ) )
 			{
-				throw new Exception( 'The Erusev Parsedown must be loaded to use Parser with Markdown.' );
+				throw new Exception( 'The Cebe Markdown must be loaded to use Parser with Markdown.' );
 			}
 
-			$markdown = new \Parsedown();
+			if( $flavour === 'github' )
+			{
+				// use github markdown
+				$markdown = new \cebe\markdown\GithubMarkdown();
+				return $markdown->parse( $source_code );
+			}
+			elseif( $flavour === 'github-paragraph' )
+			{
+				// parse only inline elements (useful for one-line descriptions)
+				$markdown = new \cebe\markdown\GithubMarkdown();
+				return $markdown->parseParagraph( $source_code );
+			}
+			elseif( $flavour === 'extra' )
+			{
+				// use markdown extra
+				$markdown = new \cebe\markdown\MarkdownExtra();
+				return $markdown->parse( $source_code );
+			}
 
-			return $markdown->text( $source_code );
+			// traditional markdown and parse full text
+			$markdown = new \cebe\markdown\Markdown();
+			return $markdown->parse( $source_code );
 		}
 
 		/**
@@ -305,6 +324,7 @@ namespace O2System
 			{
 				$active = \O2System::$active;
 				$language = \O2System::$language;
+
 				extract( \O2System::instance()->getStorage()->getArrayCopy() );
 			}
 
@@ -359,5 +379,10 @@ namespace O2System\Parser
 	 */
 	class Exception extends ExceptionInterface
 	{
+		public $library = array(
+			'name'        => 'O2System Parser (O2Parser)',
+			'description' => 'Open Source PHP Parser Driver Library',
+			'version'     => '1.0.0',
+		);
 	}
 }
