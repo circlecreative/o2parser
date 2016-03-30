@@ -6,7 +6,7 @@
  *
  * This content is released under the MIT License (MIT)
  *
- * Copyright (c) 2015, PT. Lingkar Kreasi (Circle Creative).
+ * Copyright (c) 2015, .
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
  *
  * @package     O2System
  * @author      Circle Creative Dev Team
- * @copyright   Copyright (c) 2005 - 2015, PT. Lingkar Kreasi (Circle Creative).
+ * @copyright   Copyright (c) 2005 - 2015, .
  * @license     http://circle-creative.com/products/o2parser/license.html
  * @license     http://opensource.org/licenses/MIT  MIT License
  * @link        http://circle-creative.com/products/o2parser.html
@@ -55,7 +55,7 @@ class Shortcode extends Driver
      * @access  public
      * @return  Parser Engine Adapter Object
      */
-    public function set( $settings = array() )
+    public function setup( $settings = array() )
     {
         return $this;
     }

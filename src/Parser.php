@@ -6,7 +6,7 @@
  *
  * This content is released under the MIT License (MIT)
  *
- * Copyright (c) 2015, PT. Lingkar Kreasi (Circle Creative).
+ * Copyright (c) 2015, .
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
  *
  * @package        O2System
  * @author         Circle Creative Dev Team
- * @copyright      Copyright (c) 2005 - 2015, PT. Lingkar Kreasi (Circle Creative).
+ * @copyright      Copyright (c) 2005 - 2015, .
  * @license        http://circle-creative.com/products/o2system-codeigniter/license.html
  * @license        http://opensource.org/licenses/MIT	MIT License
  * @link           http://circle-creative.com/products/o2system-codeigniter.html
@@ -39,8 +39,8 @@
 
 namespace O2System
 {
-	use O2System\Glob\Interfaces\Libraries;
-	use O2System\Glob\Exception;
+
+	use O2System\Parser\Exception;
 
 	/**
 	 * Parser Library
@@ -50,34 +50,20 @@ namespace O2System
 	 * @category         Driver
 	 * @version          1.0 Build 11.09.2012
 	 * @author           Steeven Andrian Salim
-	 * @copyright        Copyright (c) 2005 - 2014 PT. Lingkar Kreasi (Circle Creative)
+	 * @copyright        Copyright (c) 2005 - 2014
 	 * @license          http://www.circle-creative.com/products/o2system/license.html
 	 * @link             http://www.circle-creative.com
 	 */
 	// ------------------------------------------------------------------------
-	class Parser extends Libraries
+	class Parser extends Glob\Interfaces\LibraryInterface
 	{
-		/**
-		 * Valid Drivers
-		 *
-		 * @access protected
-		 */
-		protected $_valid_drivers = array(
-			'standard',
-			'dwoo',
-			'mustache',
-			'smarty',
-			'twig',
-			'shortcode',
-		);
-
 		/**
 		 * Parser Configuration
 		 *
 		 * @access protected
 		 */
 		protected $_config = array(
-			'driver'             => 'standard',
+			'driver'             => 'smarty',
 			'php'                => TRUE,
 			'markdown'           => FALSE,
 			'shortcode'          => FALSE,
@@ -114,20 +100,9 @@ namespace O2System
 		 * @uses    O2System\Core\Gears\Logger
 		 *
 		 */
-		public function __construct( $config = array() )
+		public function initialize()
 		{
-			if ( ! class_exists( 'O2System', FALSE ) )
-			{
-				$exception = new Exception();
-				$exception->register_path( __DIR__ . '/Views/' );
-				$exception->register_handler();
-			}
-
-			if ( ! empty( $config ) )
-			{
-				$this->_config = array_merge( $this->_config, $config );
-				$this->set_driver( $this->_config[ 'driver' ] );
-			}
+			$this->set_driver( $this->_config[ 'driver' ] );
 		}
 
 		/**
@@ -145,27 +120,26 @@ namespace O2System
 		{
 			$driver = strtolower( $driver );
 
-			if ( ! in_array( $driver, $this->_valid_drivers ) )
+			if ( ! array_key_exists( $driver, $this->_valid_drivers ) )
 			{
-				throw new \BadMethodCallException( 'Unsupported Parser Driver: ' . $driver );
+				throw new Exception( 'Unsupported Parser Driver: ' . $driver );
 			}
 
-			if ( isset( $this->{$driver}->extensions ) )
-			{
-				$this->extensions = array_merge( $this->extensions, $this->{$driver}->extensions );
-				$this->extensions = array_unique( $this->extensions );
-			}
-
-			$class_name = get_called_class() . '\\Drivers\\' . ucfirst( $driver );
+			$class_name = get_class( $this ) . '\\Drivers\\' . ucfirst( $driver );
 
 			$this->_driver = new $class_name();
+			$this->_driver->setup( $this->_config );
 
-			$this->_driver->set( [ 'cache' => $this->_config[ 'cache' ] . 'parser' . DIRECTORY_SEPARATOR ] );
+			if ( isset( $this->_driver->extensions ) )
+			{
+				$this->extensions = array_merge( $this->extensions, $this->_driver->extensions );
+				$this->extensions = array_unique( $this->extensions );
+			}
 		}
 
 		public function parse_file( $file, $vars = array() )
 		{
-			if ( file_exists( $file ) )
+			if ( is_file( $file ) )
 			{
 				return $this->parse_source_code( file_get_contents( $file ), $vars );
 			}
@@ -193,12 +167,6 @@ namespace O2System
 				$source_code = $this->parse_php( $source_code, $vars );
 			}
 
-			// Parse Markdown
-			if ( $this->_config[ 'markdown' ] === TRUE )
-			{
-				$source_code = $this->parse_markdown( $source_code );
-			}
-
 			// Parse Shortcode
 			if ( $this->_config[ 'shortcode' ] === TRUE )
 			{
@@ -207,6 +175,18 @@ namespace O2System
 
 			// Parse String
 			$source_code = $this->parse_string( $source_code, $vars );
+
+			// Parse Markdown
+			if ( $this->_config[ 'markdown' ] === TRUE )
+			{
+				$source_code = $this->parse_markdown( $source_code );
+			}
+
+			// Parse BBCode
+			if ( $this->_config[ 'bbcode' ] === TRUE )
+			{
+				$source_code = $this->parse_bbcode( $source_code );
+			}
 
 			return $source_code;
 		}
@@ -243,14 +223,38 @@ namespace O2System
 		{
 			if ( ! class_exists( 'Parsedown' ) )
 			{
-				throw new \O2System\Parser\Exception('The Erusev Parsedown must be loaded to use Parser with Markdown.');
+				throw new Exception( 'The Erusev Parsedown must be loaded to use Parser with Markdown.' );
 			}
-
-			$source_code = htmlspecialchars_decode( $source_code );
 
 			$markdown = new \Parsedown();
 
 			return $markdown->text( $source_code );
+		}
+
+		/**
+		 * Parse BBCode
+		 *
+		 * Parse BBCode Code inside HTML source code
+		 *
+		 * @access  public
+		 *
+		 * @param $source_code  HTML source code
+		 *
+		 * @return string
+		 */
+		public function parse_bbcode( $source_code )
+		{
+			if ( ! class_exists( 'JBBCode\Parser' ) )
+			{
+				throw new Exception( 'The JBBCode Parser must be loaded to use Parser with BBCode.' );
+			}
+
+			$bbcode = new \JBBCode\Parser();
+			$bbcode->addCodeDefinitionSet( new \JBBCode\DefaultCodeDefinitionSet() );
+
+			$bbcode->parse( $source_code );
+
+			return $bbcode->getAsHtml();
 		}
 
 		/**
@@ -297,6 +301,13 @@ namespace O2System
 
 			extract( $vars );
 
+			if ( class_exists( 'O2System', FALSE ) )
+			{
+				$active = \O2System::$active;
+				$language = \O2System::$language;
+				extract( \O2System::instance()->getStorage()->getArrayCopy() );
+			}
+
 			/*
 			 * Buffer the output
 			 *
@@ -335,7 +346,8 @@ namespace O2System
 
 namespace O2System\Parser
 {
-	use O2System\Glob\Exception\Interfaces as ExceptionInterface;
+
+	use O2System\Glob\Interfaces\ExceptionInterface;
 
 	/**
 	 * Class Exception
@@ -347,12 +359,5 @@ namespace O2System\Parser
 	 */
 	class Exception extends ExceptionInterface
 	{
-		public function __construct( $message = NULL, $code = 0, $previous = NULL )
-		{
-			parent::__construct( $message, $code, $previous );
-
-			// Register Custom Exception View Path
-			$this->register_view_paths( __DIR__ . '/Views/' );
-		}
 	}
 }

@@ -6,7 +6,7 @@
  *
  * This content is released under the MIT License (MIT)
  *
- * Copyright (c) 2015, PT. Lingkar Kreasi (Circle Creative).
+ * Copyright (c) 2015, .
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
  *
  * @package     O2System
  * @author      Circle Creative Dev Team
- * @copyright   Copyright (c) 2005 - 2015, PT. Lingkar Kreasi (Circle Creative).
+ * @copyright   Copyright (c) 2005 - 2015, .
  * @license     http://circle-creative.com/products/o2parser/license.html
  * @license     http://opensource.org/licenses/MIT  MIT License
  * @link        http://circle-creative.com/products/o2parser.html
@@ -52,7 +52,7 @@ use O2System\Parser\Interfaces\Driver;
  * @subpackage    drivers/Engine
  * @category      Adapter Class
  * @author        Steeven Andrian Salim
- * @copyright     Copyright (c) 2005 - 2014 PT. Lingkar Kreasi (Circle Creative)
+ * @copyright     Copyright (c) 2005 - 2014
  * @license       http://www.circle-creative.com/products/o2ted/license.html
  * @link          http://circle-creative.com
  *                http://o2system.center
@@ -76,15 +76,18 @@ class Smarty extends Driver
 	 */
 	private static $_engine;
 
+	// ------------------------------------------------------------------------
+
 	/**
 	 * Setup Engine
 	 *
-	 * @param   $settings   Template Config
+	 * @param   array $settings
 	 *
+	 * @return \O2System\Parser\Drivers\Parser Engine Adapter Object
+	 * @throws \O2System\Parser\Exception
 	 * @access  public
-	 * @return  Parser Engine Adapter Object
 	 */
-	public function set( $settings = array() )
+	public function setup( $settings = array() )
 	{
 		if ( ! class_exists( 'Smarty' ) )
 		{
@@ -103,8 +106,44 @@ class Smarty extends Driver
 		static::$_engine->setCacheDir( $compiler_path );
 		static::$_engine->caching = FALSE;
 
+		if ( isset( $settings[ 'security' ] ) )
+		{
+			$security = new \Smarty_Security( static::$_engine );
+
+			if ( isset( $settings[ 'security' ][ 'php_handling' ] ) AND $settings[ 'security' ][ 'php_handling' ] === FALSE )
+			{
+				$security->php_handling = \Smarty::PHP_REMOVE;
+			}
+
+			if ( ! empty( $settings[ 'security' ][ 'allowed_modifiers' ] ) )
+			{
+				$security->allowed_modifiers = $settings[ 'security' ][ 'allowed_modifiers' ];
+			}
+
+			if ( isset( $settings[ 'security' ][ 'allow_constants' ] ) AND $settings[ 'security' ][ 'allow_constants' ] === FALSE )
+			{
+				$security->allow_constants = FALSE;
+			}
+
+			if ( isset( $settings[ 'security' ][ 'allow_super_globals' ] ) AND $settings[ 'security' ][ 'allow_super_globals' ] === FALSE )
+			{
+				$security->allow_super_globals = FALSE;
+			}
+
+			if ( isset( $settings[ 'security' ][ 'allowed_tags' ] ) AND $settings[ 'security' ][ 'allowed_tags' ] === FALSE )
+			{
+				$security->allowed_tags = FALSE;
+			}
+
+			//print_out($security);
+
+			static::$_engine->enableSecurity( $security );
+		}
+
 		return $this;
 	}
+
+	// ------------------------------------------------------------------------
 
 	/**
 	 * Parse String
@@ -117,6 +156,8 @@ class Smarty extends Driver
 	 */
 	public function parse_string( $string, $vars = array() )
 	{
+		if ( ! is_string( $string ) ) return '';
+
 		foreach ( $vars as $_assign_key => $_assign_value )
 		{
 			static::$_engine->assign( $_assign_key, $_assign_value );
@@ -125,16 +166,18 @@ class Smarty extends Driver
 		return static::$_engine->fetch( 'string:' . $string );
 	}
 
+	// ------------------------------------------------------------------------
+
 	/**
 	 * Registers plugin to be used in templates
 	 *
-	 * @param string   $type       plugin type
-	 * @param string   $tag        name of template tag
-	 * @param callback $callback   PHP callback to register
-	 * @param boolean  $cacheable  if true (default) this fuction is cachable
-	 * @param array    $cache_attr caching attributes if any
+	 * @return  when the plugin tag is invalid
+	 * @internal param string $type plugin type
+	 * @internal param string $tag name of template tag
+	 * @internal param callable $callback PHP callback to register
+	 * @internal param bool $cacheable if true (default) this fuction is cachable
+	 * @internal param array $cache_attr caching attributes if any
 	 *
-	 * @throws SmartyException when the plugin tag is invalid
 	 */
 	public function register_plugin()
 	{

@@ -6,7 +6,7 @@
  *
  * This content is released under the MIT License (MIT)
  *
- * Copyright (c) 2015, PT. Lingkar Kreasi (Circle Creative).
+ * Copyright (c) 2015, .
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
  *
  * @package		O2System
  * @author		Circle Creative Dev Team
- * @copyright	Copyright (c) 2005 - 2015, PT. Lingkar Kreasi (Circle Creative).
+ * @copyright	Copyright (c) 2005 - 2015, .
  * @license		http://circle-creative.com/products/o2system-codeigniter/license.html
  * @license	    http://opensource.org/licenses/MIT	MIT License
  * @link		http://circle-creative.com/products/o2system-codeigniter.html
@@ -38,7 +38,9 @@
 // ------------------------------------------------------------------------
 namespace O2System\Parser\Interfaces;
 
-abstract class Driver
+use O2System\Glob\Interfaces\DriverInterface;
+
+abstract class Driver extends DriverInterface
 {
     /**
      * List of possible view file extensions
@@ -57,7 +59,7 @@ abstract class Driver
      * @access  public
      * @return  Parser Engine Adapter Object
      */
-    abstract public function set( $settings = array() );
+    abstract public function setup( $settings = array() );
 
     /**
      * Parse String

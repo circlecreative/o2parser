@@ -6,7 +6,7 @@
  *
  * This content is released under the MIT License (MIT)
  *
- * Copyright (c) 2015, PT. Lingkar Kreasi (Circle Creative).
+ * Copyright (c) 2015, .
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
  *
  * @package     O2System
  * @author      Circle Creative Dev Team
- * @copyright   Copyright (c) 2005 - 2015, PT. Lingkar Kreasi (Circle Creative).
+ * @copyright   Copyright (c) 2005 - 2015, .
  * @license     http://circle-creative.com/products/o2parser/license.html
  * @license     http://opensource.org/licenses/MIT  MIT License
  * @link        http://circle-creative.com/products/o2parser.html
@@ -40,6 +40,7 @@ namespace O2System\Parser\Drivers;
 
 // ------------------------------------------------------------------------
 
+use O2System\Parser\Exception;
 use O2System\Parser\Interfaces\Driver;
 
 /**
@@ -51,7 +52,7 @@ use O2System\Parser\Interfaces\Driver;
  * @subpackage    drivers/Engine
  * @category      Adapter Class
  * @author        Steeven Andrian Salim
- * @copyright     Copyright (c) 2005 - 2014 PT. Lingkar Kreasi (Circle Creative)
+ * @copyright     Copyright (c) 2005 - 2014
  * @license       http://www.circle-creative.com/products/o2ted/license.html
  * @link          http://circle-creative.com
  *                http://o2system.center
@@ -83,8 +84,13 @@ class Mustache extends Driver
      * @access  public
      * @return  Parser Engine Adapter Object
      */
-    public function set( $settings = array() )
+    public function setup( $settings = array() )
     {
+        if ( ! class_exists( 'Mustache_Engine' ) )
+        {
+            throw new Exception( 'The Mustache Template Engine must be loaded to use Parser with Mustache Driver.' );
+        }
+
         if( ! isset( static::$_engine ) )
         {
             static::$_engine = new \Mustache_Engine();
