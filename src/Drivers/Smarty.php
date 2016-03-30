@@ -99,12 +99,18 @@ class Smarty extends Driver
 			static::$_engine = new \Smarty();
 		}
 
-		$cache_path = $settings[ 'cache' ] . DIRECTORY_SEPARATOR . 'compiler' . DIRECTORY_SEPARATOR;
-		$compiler_path = $settings[ 'cache' ] . DIRECTORY_SEPARATOR . 'compiler' . DIRECTORY_SEPARATOR;
-
-		static::$_engine->setCompileDir( $cache_path );
-		static::$_engine->setCacheDir( $compiler_path );
 		static::$_engine->caching = FALSE;
+
+		if( isset($settings['cache'] ) )
+		{
+			$cache_path = $settings[ 'cache' ] . DIRECTORY_SEPARATOR . 'smarty' . DIRECTORY_SEPARATOR;
+			$compiler_path = $settings[ 'cache' ] . DIRECTORY_SEPARATOR . 'smarty'. DIRECTORY_SEPARATOR .'compiler' . DIRECTORY_SEPARATOR;
+
+			static::$_engine->setCompileDir( $cache_path );
+			static::$_engine->setCacheDir( $compiler_path );
+
+			static::$_engine->caching = TRUE;
+		}
 
 		if ( isset( $settings[ 'security' ] ) )
 		{
@@ -134,8 +140,6 @@ class Smarty extends Driver
 			{
 				$security->allowed_tags = FALSE;
 			}
-
-			//print_out($security);
 
 			static::$_engine->enableSecurity( $security );
 		}
