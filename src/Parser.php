@@ -221,28 +221,43 @@ namespace O2System
 		 */
 		public function parse_markdown( $source_code, $flavour = 'default' )
 		{
-			if ( ! class_exists( 'Parsedown' ) )
-			{
-				throw new Exception( 'The Cebe Markdown must be loaded to use Parser with Markdown.' );
-			}
-
 			if( $flavour === 'github' )
 			{
+				if ( ! class_exists( 'cebe\markdown\GithubMarkdown' ) )
+				{
+					throw new Exception( 'The Cebe Markdown GithubMarkdown Parser must be loaded to use Parser with Github Flavour.' );
+				}
+
 				// use github markdown
 				$markdown = new \cebe\markdown\GithubMarkdown();
 				return $markdown->parse( $source_code );
 			}
 			elseif( $flavour === 'github-paragraph' )
 			{
+				if ( ! class_exists( 'cebe\markdown\GithubMarkdown' ) )
+				{
+					throw new Exception( 'The Cebe Markdown GithubMarkdown Parser must be loaded to use Parser with Github Flavour.' );
+				}
+
 				// parse only inline elements (useful for one-line descriptions)
 				$markdown = new \cebe\markdown\GithubMarkdown();
 				return $markdown->parseParagraph( $source_code );
 			}
 			elseif( $flavour === 'extra' )
 			{
+				if ( ! class_exists( 'cebe\markdown\MarkdownExtra' ) )
+				{
+					throw new Exception( 'The Cebe Markdown GithubMarkdown Parser must be loaded to use Parser with Extra Flavour.' );
+				}
+
 				// use markdown extra
 				$markdown = new \cebe\markdown\MarkdownExtra();
 				return $markdown->parse( $source_code );
+			}
+
+			if ( ! class_exists( 'cebe\markdown\Markdown' ) )
+			{
+				throw new Exception( 'The Cebe Markdown Parser must be loaded to use Parser with Markdown.' );
 			}
 
 			// traditional markdown and parse full text
